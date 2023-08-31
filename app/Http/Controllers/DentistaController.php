@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Dentista;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Http\Requests\DentistaRequest;
+use Illuminate\Http\Request;
+
 
 class DentistaController extends Controller
 {
@@ -16,7 +18,7 @@ class DentistaController extends Controller
      */
     public function index(): View
     {
-        $dentistas = Dentista::get();
+        $dentistas = Dentista::paginate(5);
 
         return view('dentistas.index', [
             'dentistas' => $dentistas
@@ -50,13 +52,21 @@ class DentistaController extends Controller
      * cria um dentista no banco de dados
      */
 
-    public function store(Request $request): RedirectResponse
+    public function store(DentistaRequest $request): RedirectResponse
     {
-        $dados = $request->except('_token');
+
+        try {
+            $dados = $request->except('_token');
         
         Dentista::create($dados);
 
-        return redirect('/dentistas');
+        return redirect()->route('dentistas.index')
+            ->with('mensagem', "cadastrado com sucesso!!");
+        } catch (\Exception $e) {
+            throw new \Exception("erro ao cadastrar " . $e->getMessage());
+        }
+
+       
     }
 
     /**
@@ -77,10 +87,10 @@ class DentistaController extends Controller
      * atualiza o dentista no banco de dados
      *
      * @param integer $id
-     * @param Request $request
+     * @param DentistaRequest $request
      * @return RedirectResponse
      */
-    public function update( int $id, Request $request): RedirectResponse
+    public function update( int $id, DentistaRequest $request): RedirectResponse
     {
         
        $dentista = Dentista::find($id);
@@ -91,7 +101,8 @@ class DentistaController extends Controller
             'cro_uf' => $request->cro_uf
        ]);
 
-       return redirect('/dentistas');
+       return redirect()->route('dentistas.index')
+       ->with('mensagem', "Atualizado com sucesso!!");
     }
 
     /**
@@ -104,9 +115,18 @@ class DentistaController extends Controller
 
         $dentista->delete();
 
-        return redirect('/');
+        return redirect('/dentistas');
 
 
+    }
+
+    public function search(Request $request)
+    {
+        $dentistas = Dentista::where('name','LIKE', "%{$request->search}%")
+                              ->orWhere('cro','LIKE', "%{$request->search}%")
+                              ->paginate();
+        return view('dentistas.index', compact('dentistas'));
+        
     }
 
 }
