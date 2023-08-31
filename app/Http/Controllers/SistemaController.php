@@ -6,6 +6,17 @@ use Illuminate\Http\Request;
 
 class SistemaController extends Controller
 {
+
+    /**
+     * Mostra a lista de dentistas
+     *
+     * @return void
+     */
+    public function index()
+    {
+        return view('home');
+    }
+
    /**
     * Cria um novo Dentista
     *
@@ -16,15 +27,6 @@ class SistemaController extends Controller
         echo "aqui é a criar";
     }
 
-    /**
-     * Mostra a lista de dentistas
-     *
-     * @return void
-     */
-    public function index()
-    {
-        echo "mostra a lista de dentistas";
-    }
 
     /**
      * Mostrar o dentista por id
