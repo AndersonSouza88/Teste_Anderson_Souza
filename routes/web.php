@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\DentistaController;
 use App\Http\Controllers\SistemaController;
+use App\Models\Dentista;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/',[SistemaController::class,'index']);
-Route::get('/criar',[SistemaController::class,'create']);
-Route::get('/listar/{id}',[SistemaController::class,'show']);
-Route::get('/editar',[SistemaController::class, 'edit']);
+Route::get('/', [SistemaController::class,'index'])->name('index');
+
+
+Route::resource('dentistas',DentistaController::class);
 
