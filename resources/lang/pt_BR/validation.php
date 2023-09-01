@@ -152,8 +152,8 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'cro' => [
+            'unique' => 'O CRO informado já está em uso.',
         ],
     ],
 

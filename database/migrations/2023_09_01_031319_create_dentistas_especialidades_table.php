@@ -14,9 +14,12 @@ class CreateDentistasEspecialidadesTable extends Migration
     public function up()
     {
         Schema::create('dentistas_especialidades', function (Blueprint $table) {
-            $table->unsignedInteger('especialidade_id')->nullable(false);
-            $table->unsignedInteger('dentista_id')->nullable(false);
+            $table->unsignedBigInteger('dentista_id');
+            $table->unsignedBigInteger('especialidade_id');
             $table->timestamps();
+
+            $table->foreign('dentista_id')->references('id')->on('dentistas')->onDelete('cascade');
+            $table->foreign('especialidade_id')->references('id')->on('especialidades')->onDelete('cascade');
         });
     }
 

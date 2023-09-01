@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dentista extends Model
 {
-    protected $fillable = ['name','email','cro','cro_uf'];
-    use HasFactory;
+    
+    protected $fillable = ['name', 'email', 'cro', 'cro_uf'];
+
+    public function especialidades()
+    {
+        return $this->belongsToMany(Especialidade::class, 'dentistas_especialidades', 'dentista_id', 'especialidade_id');
+    }
+    
+
+    
 }
