@@ -153,7 +153,7 @@ return [
 
     'custom' => [
         'cro' => [
-            'unique' => 'O CRO informado já está em uso.',
+            'unique' => 'Este CRO já está em uso e não pode mais ser utilizado.',
         ],
     ],
 

@@ -24,10 +24,10 @@ class DentistaRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => ['required','min:2','max:100'],
-            'email' => ['required','min:5','max:100'],
-            'cro' =>  ['required', 'max:11'],
-            'cro_uf' => ['required','max:2']
+            'name' => 'required|min:2|max:100',
+            'email' => 'required|min:5|max:100',
+            'cro' => 'required|numeric',
+            'cro_uf' => 'required|string|size:2',
         ];
     }
 }

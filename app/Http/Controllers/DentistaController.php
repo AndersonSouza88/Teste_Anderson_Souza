@@ -31,13 +31,13 @@ class DentistaController extends Controller
      *
      * @param integer $id
      * @return View
-     */        
+     */
     public function show(int $id): View
     {
         $dentista = Dentista::find($id);
-       return view('dentistas.show', [
-            'dentista'=> $dentista
-       ]);
+        return view('dentistas.show', [
+            'dentista' => $dentista
+        ]);
     }
 
     /**
@@ -54,31 +54,44 @@ class DentistaController extends Controller
      * cria um dentista no banco de dados
      */
 
-    public function store(DentistaRequest $request): RedirectResponse
-    {
-
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'cro' => 'required|unique:dentistas,cro',
-            'cro_uf' => 'required',
-        ]);
-        
-        $dentista = Dentista::create([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'cro' => $request->input('cro'),
-            'cro_uf' => $request->input('cro_uf'),
-        ]);
-    
-        $especialidadesSelecionadas = $request->input('especialidades', []);
-
-        $dentista->especialidades()->attach($especialidadesSelecionadas);
-    
-        return redirect()->route('dentistas.index');
-
-       
-    }
+     public function store(DentistaRequest $request): RedirectResponse
+     {
+         $request->validate([
+             'name' => 'required',
+             'email' => 'required|email',
+             'cro' => 'required|numeric|unique:dentistas,cro',
+             'cro_uf' => 'required|string|size:2',
+         ]);
+     
+         // Obtenha o valor do campo "cro_uf" e converta para maiúsculas
+         $croUf = strtoupper($request->input('cro_uf'));
+     
+         // Verifique novamente se o CRO já está em uso (para maior segurança)
+         if (Dentista::where('cro', $request->input('cro'))->exists()) {
+             return redirect()->back()->withInput()->withErrors(['cro' => 'Este CRO já está em uso.']);
+         }
+     
+         try {
+             $dentista = Dentista::create([
+                 'name' => $request->input('name'),
+                 'email' => $request->input('email'),
+                 'cro' => $request->input('cro'),
+                 'cro_uf' => $croUf,
+             ]);
+     
+             $especialidadesSelecionadas = $request->input('especialidades', []);
+     
+             $dentista->especialidades()->attach($especialidadesSelecionadas);
+     
+             return redirect()->route('dentistas.index')
+                 ->with('mensagem', "Dentista criado com sucesso!!");
+         } catch (\Exception $e) {
+             return redirect()->back()
+                 ->withInput()
+                 ->withErrors(['Erro ao criar o dentista. Por favor, tente novamente.']);
+         }
+     }
+     
 
     /**
      * mostra o formulario para a edição
@@ -89,9 +102,8 @@ class DentistaController extends Controller
         $dentista = Dentista::find($id);
 
         $especialidades = Especialidade::all();
-    
-        return view('dentistas.edit', compact('dentista', 'especialidades'));
 
+        return view('dentistas.edit', compact('dentista', 'especialidades'));
     }
 
     /**
@@ -101,25 +113,30 @@ class DentistaController extends Controller
      * @param DentistaRequest $request
      * @return RedirectResponse
      */
-    public function update( int $id, DentistaRequest $request): RedirectResponse
+    public function update(int $id, DentistaRequest $request): RedirectResponse
     {
-        
-       $dentista = Dentista::find($id);
-       $dentista->update([
-        'name' => $request->input('name'),
-        'email' => $request->input('email'),
-        'cro_uf' => $request->input('cro_uf'),
-        // Não inclua 'cro' aqui para evitar a atualização
-    ]);
 
-    // Obtenha os IDs das especialidades selecionadas
-    $especialidadesSelecionadas = $request->input('especialidades', []);
+        try {
+            $dentista = Dentista::find($id);
+            $dentista->update([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'cro_uf' => $request->input('cro_uf'),
+                // Não inclua 'cro' aqui para evitar a atualização
+            ]);
 
-    // Sincronize apenas os IDs das especialidades do dentista
-    $dentista->especialidades()->sync($especialidadesSelecionadas);
+            // Obtenha os IDs das especialidades selecionadas
+            $especialidadesSelecionadas = $request->input('especialidades', []);
 
-    return redirect()->route('dentistas.index')
-       ->with('mensagem', "Atualizado com sucesso!!");
+            // Sincronize apenas os IDs das especialidades do dentista
+            $dentista->especialidades()->sync($especialidadesSelecionadas);
+
+            return redirect()->route('dentistas.index')
+                ->with('mensagem', "Atualizado com sucesso!!");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['Erro ao atualizar o dentista. Por favor, tente novamente.']);
+        }
     }
 
     /**
@@ -128,25 +145,27 @@ class DentistaController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        $dentista = Dentista::find($id);
+        try {
+            $dentista = Dentista::find($id);
 
-        $dentista->especialidades()->detach();
+            $dentista->especialidades()->detach();
 
-        $dentista->delete();
+            $dentista->delete();
 
-        return redirect('/dentistas');
-
-
+            return redirect('/dentistas')
+                ->with('mensagem', "Deletado com sucesso!!");
+        } catch (\Exception $e) {
+            return redirect('/dentistas')
+                ->withErrors(['Erro ao deletar o dentista. Por favor, tente novamente.']);
+        }
     }
 
     public function search(Request $request)
     {
-        $dentistas = Dentista::where('name','LIKE', "%{$request->search}%")
-                              ->orWhere('cro','LIKE', "%{$request->search}%")
-                              ->orWhere('cro_uf', 'LIKE',"%{$request->search}%")
-                              ->paginate();
+        $dentistas = Dentista::where('name', 'LIKE', "%{$request->search}%")
+            ->orWhere('cro', 'LIKE', "%{$request->search}%")
+            ->orWhere('cro_uf', 'LIKE', "%{$request->search}%")
+            ->paginate();
         return view('dentistas.index', compact('dentistas'));
-        
     }
-
 }
