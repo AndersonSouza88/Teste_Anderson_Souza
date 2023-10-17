@@ -7,5 +7,5 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 # Teste_Anderson_Souza
-Teste feito para vaga de Desenvolvedor de Sistemas para a empresa Dental Uni Cooperativa Odontológica.
+Teste feito para vaga de Desenvolvedor de Sistemas.
 Criando um sistema (CRUD) de listagem de Dentistas contendo:  Nome, E-mail, CRO e Especialidades
